@@ -1,21 +1,19 @@
 {
+    "$schema": "https://json.schemastore.org/tsconfig",
+    "display": "Node 14",
     "compilerOptions": {
-        "target": "es5",
-        "skipLibCheck": true,
+        "lib": [
+            "es2020"
+        ],
+        "module": "ES6",
+        "target": "es6",
+        "strict": true,
         "esModuleInterop": true,
-        "allowSyntheticDefaultImports": true,
-        "noFallthroughCasesInSwitch": true,
-        "module": "esnext",
-        "moduleResolution": "node",
-        "resolveJsonModule": true,
-        "baseUrl": "src",
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "noEmit": false,
         "outDir": "dist",
-    },
-    "include": [
-        "src"
-    ],
-    "exclude": [
-        "node_modules",
-        "dist"
-    ]
+        "moduleResolution": "Node",
+        "allowSyntheticDefaultImports": true
+    }
 }

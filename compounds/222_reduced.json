@@ -1,0 +1,65 @@
+{
+    "ChemicalSafety": [
+        {
+            "Type": "Icon",
+            "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS05.svg",
+            "Extra": "Corrosive"
+        },
+        {
+            "Type": "Icon",
+            "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS06.svg",
+            "Extra": "Acute Toxic"
+        },
+        {
+            "Type": "Icon",
+            "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS09.svg",
+            "Extra": "Environmental Hazard"
+        }
+    ],
+    "RecordDescription": "Ammonia solutions (containing more than 35% but not more than 50% ammonia) appears as a clear colorless liquid consisting of ammonia dissolved in water. Corrosive to tissue and metals. Although ammonia is lighter than air, the vapors from a leak will initially hug the ground. Long term exposure to low concentrations or short term exposure to high concentrations may result in adverse health conditions from inhalation. Prolonged exposure of containers to fire or heat may result in their violent rupturing and rocketing.",
+    "IUPACName": "azane",
+    "InChI": "InChI=1S/H3N/h1H3",
+    "InChIKey": "QGZKDVFQNNGYKY-UHFFFAOYSA-N",
+    "CanonicalSMILES": "N",
+    "MolecularFormula": "H3N",
+    "CAS": "7664-41-7",
+    "RelatedCAS": "71187-51-4",
+    "EuropeanCommunity(EC)Number": "231-635-3",
+    "ICSCNumber": "0414",
+    "RTECSNumber": "BO0875000",
+    "UNNumber": "2073",
+    "UNII": "5138Q19F1X",
+    "FEMANumber": "4494",
+    "DSSToxSubstanceID": "DTXSID0023872",
+    "NCIThesaurusCode": "C76698",
+    "Wikipedia": "https://en.wikipedia.org/wiki/Ammonia",
+    "MolecularWeight": "17.031",
+    "CompoundIsCanonicalized": "Yes",
+    "ExactMass": {
+        "String": "17.026549100",
+        "Unit": "g/mol"
+    },
+    "MonoisotopicMass": {
+        "String": "17.026549100",
+        "Unit": "g/mol"
+    },
+    "Topological Polar Surface Area": {
+        "Number": [
+            1
+        ],
+        "Unit": "Å²"
+    },
+    "XLogP3": -0.7,
+    "HydrogenBondDonorCount": 1,
+    "HydrogenBondAcceptorCount": 1,
+    "RotatableBondCount": 0,
+    "HeavyAtomCount": 1,
+    "FormalCharge": 0,
+    "Complexity": 0,
+    "IsotopeAtomCount": 0,
+    "DefinedAtomStereocenterCount": 0,
+    "UndefinedAtomStereocenterCount": 0,
+    "DefinedBondStereocenterCount": 0,
+    "UndefinedBondStereocenterCount": 0,
+    "Covalently-BondedUnitCount": 1
+}
