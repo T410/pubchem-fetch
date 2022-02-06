@@ -88,10 +88,11 @@ export default function getNecessaryData(raw: PubChemCompound) {
 		});
 	});
 
+	//This needs both number and unit
 	const topological = getSubsection(ComputedProperties)("Topological Polar Surface Area")!.Information[0].Value;
 	res = setToResult(res)({ "Topological Polar Surface Area": { Number: topological.Number, Unit: topological.Unit } });
 
-	// //Information > Value > Number
+	//Information > Value > Number
 	[
 		"XLogP3",
 		"Hydrogen Bond Donor Count",
@@ -112,6 +113,52 @@ export default function getNecessaryData(raw: PubChemCompound) {
 			[key]: getSubsection(ComputedProperties)(x)!.Information[0].Value.Number?.[0],
 		});
 	});
+
+	const ExperimentalProperties = getSubsection(ChemicalAndPhysicalProperties)(
+		"Experimental Properties"
+	) as BaseSection<"Experimental Properties">;
+
+	[
+		"Physical Description",
+		"Color/Form",
+		"Odor",
+		"Taste",
+		"Boiling Point",
+		"Melting Point",
+		"Flash Point",
+		"Solubility",
+		"Density",
+		"Vapor Density",
+		"Vapor Pressure",
+		"LogP",
+		"Henrys Law Constant",
+		"Atmospheric OH Rate Constant",
+		"Stability/Shelf Life",
+		"Autoignition Temperature",
+		"Decomposition",
+		"Viscosity",
+		"Corrosivity",
+		"Heat of Combustion",
+		"Heat of Vaporization",
+		"pH",
+		"Surface Tension",
+		"Ionization Potential",
+		"Polymerization",
+		"Odor Threshold",
+		"Refractive Index",
+		"Dissociation Constants",
+		"Other Experimental Properties",
+	].forEach((x) => {
+		let key = x.replace(/ /g, "");
+		const section = getSubsection(ExperimentalProperties)(x);
+		if (!section) return;
+		console.log(section);
+		res = setToResult(res)({
+			[key]: section.Information.map((info) => info.Value.StringWithMarkup.map((x) => x.String)).flat(),
+		});
+	});
+	const kovats = getSubsection(ExperimentalProperties)("Kovats Retention Index")!.Information[0].Value.Number;
+	res = setToResult(res)({ "Kovats Retention Index": kovats });
 
 	return res;
 }
