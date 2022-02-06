@@ -17,17 +17,15 @@ function fetchJson(compoundId, id) {
     return new Promise((resolve, reject) => {
         fetch(API_URL + compoundId + "/JSON")
             .then((res) => res.json())
-            .then((res) => resolve({ compound: res, id }));
+            .then((res) => {
+            const { Record } = res;
+            resolve({ compound: Record, compoundId, id });
+        });
     });
 }
-function writeToFile(data) {
-    fs.writeFile("./compounds/" + compoundId + ".json", JSON.stringify(data), (err) => {
-        if (err) {
-            console.log(err);
-        }
-    });
-}
-function writeToFileReduced(data) {
+function writeToFile(data, compoundId, id) {
+    console.log(compoundId, data.RecordTitle);
+    data.id = id;
     fs.writeFile("./compounds/" + compoundId + "_reduced.json", JSON.stringify(data), (err) => {
         if (err) {
             console.log(err);
@@ -42,11 +40,11 @@ function init() {
             promises.push(fetchJson(compoundId + count, startId + count));
             count++;
         }
+        let i = 0;
         Promise.all(promises).then((res) => {
-            res.forEach(({ compound, id }) => {
+            res.forEach(({ compound, compoundId, id }) => {
                 const reducedCompound = getNecessaryData(compound);
-                writeToFileReduced(reducedCompound);
-                // writeToFile(compound);
+                writeToFile(reducedCompound, compoundId, id);
             });
         });
     });

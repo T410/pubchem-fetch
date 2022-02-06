@@ -1,4 +1,4 @@
-export type PubChemCompound = { Record: Data };
+export type PubChemCompound = Record;
 
 export interface Information {
 	URL?: string;
@@ -107,7 +107,7 @@ export interface AgrochemicalInformation extends BaseSection<"Agrochemical Infor
 	Section: [BaseSection<"Agrochemical Category">];
 }
 
-interface Data {
+interface Record {
 	RecordNumber: number;
 	RecordTitle: string;
 	Section: [
@@ -117,4 +117,5 @@ interface Data {
 		FoodAdditivesAndIngredients,
 		AgrochemicalInformation
 	];
+	id?: number;
 }
