@@ -51,6 +51,130 @@ const getNumber = (section: BaseSection<string> | undefined) => {
 	return [...new Set(stringWithMarkup)];
 };
 
+const dataPaths = {
+	ChemicalSafety: { sectionPath: ["ChemicalSafety"] },
+	IUPACName: { sectionPath: ["Names and Identifiers", "Computed Descriptors", "IUPAC Name"] },
+	InChI: { sectionPath: ["Names and Identifiers", "Computed Descriptors", "InChI"] },
+	InChIKey: { sectionPath: ["Names and Identifiers", "Computed Descriptors", "InChI Key"] },
+	CanonicalSMILES: { sectionPath: ["Names and Identifiers", "Computed Descriptors", "Canonical SMILES"] },
+	MolecularFormula: { sectionPath: ["Names and Identifiers", "Molecular Formula"] },
+
+	CAS: { sectionPath: ["Names and Identifiers", "Other Identifiers", "CAS"] },
+	RelatedCAS: { sectionPath: ["Names and Identifiers", "Other Identifiers", "Related CAS"] },
+	"European CommunityNumber": {
+		sectionPath: ["Names and Identifiers", "Other Identifiers", "European Community (EC) Number"],
+	},
+	ICSCNumber: { sectionPath: ["Names and Identifiers", "Other Identifiers", "ICSC Number"] },
+	RTECSNumber: { sectionPath: ["Names and Identifiers", "Other Identifiers", "RTECS Number"] },
+	UNNumber: { sectionPath: ["Names and Identifiers", "Other Identifiers", "UN Number"] },
+	UNII: { sectionPath: ["Names and Identifiers", "Other Identifiers", "UNII"] },
+	FEMANumber: { sectionPath: ["Names and Identifiers", "Other Identifiers", "FEMA Number"] },
+	DSSToxSubstanceID: { sectionPath: ["Names and Identifiers", "Other Identifiers", "DSSTox Substance ID"] },
+	Wikipedia: { sectionPath: ["Names and Identifiers", "Other Identifiers", "Wikipedia"] },
+	NCIThesaurusCode: { sectionPath: ["Names and Identifiers", "Other Identifiers", "NCI Thesaurus Code"] },
+
+	MolecularWeight: { sectionPath: ["Chemical and Physical Properties", "Computed Properties", "Molecular Weight"] },
+	CompoundIsCanonicalized: {
+		sectionPath: ["Chemical and Physical Properties", "Computed Properties", "Compound Is Canonicalized"],
+	},
+	XLogP3: { sectionPath: ["Chemical and Physical Properties", "Computed Properties", "XLogP3"] },
+	HydrogenBondDonorCount: {
+		sectionPath: ["Chemical and Physical Properties", "Computed Properties", "Hydrogen Bond Donor Count"],
+	},
+	HydrogenBondAcceptorCount: {
+		sectionPath: ["Chemical and Physical Properties", "Computed Properties", "Hydrogen Bond Acceptor Count"],
+	},
+	RotatableBondCount: {
+		sectionPath: ["Chemical and Physical Properties", "Computed Properties", "Rotatable Bond Count"],
+	},
+	HeavyAtomCount: { sectionPath: ["Chemical and Physical Properties", "Computed Properties", "Heavy Atom Count"] },
+	FormalCharge: { sectionPath: ["Chemical and Physical Properties", "Computed Properties", "Formal Charge"] },
+	Complexity: { sectionPath: ["Chemical and Physical Properties", "Computed Properties", "Complexity"] },
+
+	IsotopeAtomCount: {
+		sectionPath: ["Chemical and Physical Properties", "Computed Properties", "Isotope Atom Count"],
+	},
+	DefinedAtomStereocenterCount: {
+		sectionPath: ["Chemical and Physical Properties", "Computed Properties", "Defined Atom Stereocenter Count"],
+	},
+	UndefinedAtomStereocenterCount: {
+		sectionPath: ["Chemical and Physical Properties", "Computed Properties", "Undefined Atom Stereocenter Count"],
+	},
+	DefinedBondStereocenterCount: {
+		sectionPath: ["Chemical and Physical Properties", "Computed Properties", "Defined Bond Stereocenter Count"],
+	},
+	UndefinedBondStereocenterCount: {
+		sectionPath: ["Chemical and Physical Properties", "Computed Properties", "Undefined Bond Stereocenter Count"],
+	},
+	"Covalently-BondedUnitCount": {
+		sectionPath: ["Chemical and Physical Properties", "Computed Properties", "Covalently-Bonded Unit Count"],
+	},
+
+	PhysicalDescription: {
+		sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Physical Description"],
+	},
+	ColorForm: { sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Color/Form"] },
+	Odor: { sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Odor"] },
+	Taste: { sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Taste"] },
+	BoilingPoint: { sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Boiling Point"] },
+	MeltingPoint: { sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Melting Point"] },
+	FlashPoint: { sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Flash Point"] },
+	Solubility: { sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Solubility"] },
+	Density: { sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Density"] },
+	VaporDensity: { sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Vapor Density"] },
+	VaporPressure: { sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Vapor Pressure"] },
+	LogP: { sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "LogP"] },
+	HenrysLawConstant: {
+		sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Henrys Law Constant"],
+	},
+	AtmosphericOHRateConstant: {
+		sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Atmospheric OH Rate Constant"],
+	},
+	"Stability/ShelfLife": {
+		sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Stability/Shelf Life"],
+	},
+	AutoignitionTemperature: {
+		sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Autoignition Temperature"],
+	},
+	Decomposition: { sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Decomposition"] },
+	Viscosity: { sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Viscosity"] },
+	Corrosivity: { sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Corrosivity"] },
+	HeatofCombustion: {
+		sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Heat of Combustion"],
+	},
+	HeatofVaporization: {
+		sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Heat of Vaporization"],
+	},
+	pH: { sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "pH"] },
+	SurfaceTension: {
+		sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Surface Tension"],
+	},
+	IonizationPotential: {
+		sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Ionization Potential"],
+	},
+	Polymerization: { sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Polymerization"] },
+	OdorThreshold: { sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Odor Threshold"] },
+	RefractiveIndex: {
+		sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Refractive Index"],
+	},
+	DissociationConstants: {
+		sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Dissociation Constants"],
+	},
+	KovatsRetentionIndex: {
+		sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Kovats Retention Index"],
+	},
+	OtherExperimentalProperties: {
+		sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Other Experimental Properties"],
+	},
+
+	FoodAdditiveClasses: {
+		sectionPath: ["Food Additive and Ingredients", "Food Additive Classes"],
+	},
+	AgrochemicalCategory: {
+		sectionPath: ["Agrochemical Information", "Agrochemical Category"],
+	},
+};
+
 export default function getNecessaryData(raw: PubChemCompound) {
 	let res = {};
 
