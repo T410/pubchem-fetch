@@ -152,13 +152,36 @@ export default function getNecessaryData(raw: PubChemCompound) {
 		let key = x.replace(/ /g, "");
 		const section = getSubsection(ExperimentalProperties)(x);
 		if (!section) return;
-		console.log(section);
 		res = setToResult(res)({
 			[key]: section.Information.map((info) => info.Value.StringWithMarkup.map((x) => x.String)).flat(),
 		});
 	});
 	const kovats = getSubsection(ExperimentalProperties)("Kovats Retention Index")!.Information[0].Value.Number;
 	res = setToResult(res)({ "Kovats Retention Index": kovats });
+
+	const FoodAdditivesAndIngredients = getH3(raw)(
+		"Food Additives and Ingredients"
+	) as BaseSection<"Food Additives and Ingredients">;
+	const FoodAdditiveClasses = getSubsection(FoodAdditivesAndIngredients)(
+		"Food Additive Classes"
+	) as BaseSection<"Food Additive Classes">;
+
+	res = setToResult(res)({
+		FoodAdditiveClasses: FoodAdditiveClasses.Information.map((info) =>
+			info.Value.StringWithMarkup.map((x) => x.String)
+		).flat(),
+	});
+
+	const AgrochemicalInformation = getH3(raw)("Agrochemical Information") as BaseSection<"Agrochemical Information">;
+	const AgrochemicalCategory = getSubsection(AgrochemicalInformation)(
+		"Agrochemical Category"
+	) as BaseSection<"Agrochemical Category">;
+
+	res = setToResult(res)({
+		AgrochemicalCategory: AgrochemicalCategory.Information.map((info) =>
+			info.Value.StringWithMarkup.map((x) => x.String)
+		).flat(),
+	});
 
 	return res;
 }
