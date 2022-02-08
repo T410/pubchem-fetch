@@ -9,6 +9,11 @@ const dataPaths = [
         },
     },
     {
+        name: "RecordDescription",
+        sectionPath: ["Names and Identifiers", "Record Description"],
+        dataPath: ["Information", "Value", "StringWithMarkup", "String"],
+    },
+    {
         name: "IUPACName",
         sectionPath: ["Names and Identifiers", "Computed Descriptors", "IUPAC Name"],
         dataPath: ["Information", "Value", "StringWithMarkup", "String"],
@@ -385,6 +390,7 @@ const extractFromArrayIfOneItem = (val) => {
 };
 export default function getNecessaryData(raw) {
     let res = {};
+    res = Object.assign(Object.assign({}, res), { RecordTitle: raw.RecordTitle });
     dataPaths.forEach(({ name, sectionPath, dataPath, resolver }) => {
         const section = [...sectionPath].reduce((acc, cur, i, arr) => {
             if (Object.keys(acc).length === 0) {

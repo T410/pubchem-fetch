@@ -1,5 +1,10 @@
 {
+    "RecordTitle": "[5-(6-Aminopurin-9-yl)-3,4-dihydroxyoxolan-2-yl]methyl dihydrogen phosphate",
     "ChemicalSafety": "N/A",
+    "RecordDescription": [
+        "9-(5-O-Phosphonopentofuranosyl)-9H-purin-6-amine is a purine ribonucleoside monophosphate.",
+        "An adenosine monophosphate analog in which ribose is replaced by an arabinose moiety. It is the monophosphate ester of VIDARABINE with antiviral and possibly antineoplastic properties."
+    ],
     "IUPACName": "[5-(6-aminopurin-9-yl)-3,4-dihydroxyoxolan-2-yl]methyl dihydrogen phosphate",
     "InChI": "InChI=1S/C10H14N5O7P/c11-8-5-9(13-2-12-8)15(3-14-5)10-7(17)6(16)4(22-10)1-21-23(18,19)20/h2-4,6-7,10,16-17H,1H2,(H2,11,12,13)(H2,18,19,20)",
     "InChIKey": "UDMBCSSLTHHNCD-UHFFFAOYSA-N",
@@ -80,5 +85,5 @@
     "OtherExperimentalProperties": "N/A",
     "FoodAdditiveClasses": "N/A",
     "AgrochemicalCategory": "N/A",
-    "id": 0
+    "id": 2
 }
