@@ -23,7 +23,6 @@ function fetchJson(
 }
 
 function writeToFile(data: PubChemCompound, compoundId: number, id: number) {
-	console.log(compoundId, data.RecordTitle);
 	data.id = id;
 	fs.writeFile("./compounds/" + compoundId + "_reduced.json", JSON.stringify(data), (err) => {
 		if (err) {

@@ -24,7 +24,6 @@ function fetchJson(compoundId, id) {
     });
 }
 function writeToFile(data, compoundId, id) {
-    console.log(compoundId, data.RecordTitle);
     data.id = id;
     fs.writeFile("./compounds/" + compoundId + "_reduced.json", JSON.stringify(data), (err) => {
         if (err) {

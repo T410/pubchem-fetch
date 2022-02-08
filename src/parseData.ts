@@ -1,365 +1,429 @@
-import { PubChemCompound, BaseSection } from "./types";
+import { PubChemCompound } from "./types";
+import type { BaseSection, DataKeys, Information, Markup, Value, StringWithMarkup } from "./types";
 
-const getChemicalSafety = (raw: PubChemCompound) =>
-	raw.Section.find((x) => x.TOCHeading === "Chemical Safety")
-		?.Information.map((info) =>
-			info.Value.StringWithMarkup.map((x) =>
-				x.Markup.map(({ Type, URL, Extra }) => {
-					return { Type, URL, Extra };
-				})
-			)
-		)
-		.flat();
+type ObjectOfAny = { [key: string]: any };
 
-const setToResult = (result: {}) => (keyValuePair: {} | undefined) => {
-	if (keyValuePair) {
-		return { ...result, ...keyValuePair };
-	}
-	return result;
-};
+const dataPaths: {
+	name: string;
+	sectionPath: string[];
+	dataPath: DataKeys[];
+	resolver?: (data: any) => any;
+}[] = [
+	{
+		name: "ChemicalSafety",
+		sectionPath: ["Chemical Safety"],
+		dataPath: ["Information", "Value", "StringWithMarkup", "Markup"],
+		resolver: (data: Markup[]) => {
+			return data.map((x): Markup => {
+				return { Extra: x.Extra, Type: x.Type, URL: x.URL };
+			});
+		},
+	},
+	{
+		name: "IUPACName",
+		sectionPath: ["Names and Identifiers", "Computed Descriptors", "IUPAC Name"],
+		dataPath: ["Information", "Value", "StringWithMarkup", "String"],
+	},
+	{
+		name: "InChI",
+		sectionPath: ["Names and Identifiers", "Computed Descriptors", "InChI"],
+		dataPath: ["Information", "Value", "StringWithMarkup", "String"],
+	},
+	{
+		name: "InChIKey",
+		sectionPath: ["Names and Identifiers", "Computed Descriptors", "InChI Key"],
+		dataPath: ["Information", "Value", "StringWithMarkup", "String"],
+	},
+	{
+		name: "CanonicalSMILES",
+		sectionPath: ["Names and Identifiers", "Computed Descriptors", "Canonical SMILES"],
+		dataPath: ["Information", "Value", "StringWithMarkup", "String"],
+	},
+	{
+		name: "MolecularFormula",
+		sectionPath: ["Names and Identifiers", "Molecular Formula"],
+		dataPath: ["Information", "Value", "StringWithMarkup", "String"],
+	},
 
-const getH3 = (raw: PubChemCompound) => (h3: string) => raw.Section.find((x) => x.TOCHeading === h3);
-const getSubsection = (raw: BaseSection<string>) => (h4: string) => raw.Section?.find((x) => x.TOCHeading === h4);
-
-const getStringWithMarkupString = (section: BaseSection<string> | undefined) => {
-	if (section === undefined) return [""];
-
-	const stringWithMarkup = section.Information.map((info) => info.Value.StringWithMarkup.map((x) => x.String)).flat();
-
-	if (!stringWithMarkup) return [""];
-
-	return [...new Set(stringWithMarkup)];
-};
-
-const getUnit = (section: BaseSection<string> | undefined) => {
-	if (section === undefined) return [""];
-
-	const stringWithMarkup = section.Information.map((info) => info.Value.Unit).flat();
-
-	if (!stringWithMarkup) return [""];
-
-	return [...new Set(stringWithMarkup)];
-};
-
-const getNumber = (section: BaseSection<string> | undefined) => {
-	if (section === undefined) return [""];
-
-	const stringWithMarkup = section.Information.map((info) => info.Value.Number?.map((x) => x)).flat();
-
-	if (!stringWithMarkup) return [""];
-
-	return [...new Set(stringWithMarkup)];
-};
-
-const dataPaths = {
-	ChemicalSafety: { sectionPath: ["ChemicalSafety"] },
-	IUPACName: { sectionPath: ["Names and Identifiers", "Computed Descriptors", "IUPAC Name"] },
-	InChI: { sectionPath: ["Names and Identifiers", "Computed Descriptors", "InChI"] },
-	InChIKey: { sectionPath: ["Names and Identifiers", "Computed Descriptors", "InChI Key"] },
-	CanonicalSMILES: { sectionPath: ["Names and Identifiers", "Computed Descriptors", "Canonical SMILES"] },
-	MolecularFormula: { sectionPath: ["Names and Identifiers", "Molecular Formula"] },
-
-	CAS: { sectionPath: ["Names and Identifiers", "Other Identifiers", "CAS"] },
-	RelatedCAS: { sectionPath: ["Names and Identifiers", "Other Identifiers", "Related CAS"] },
-	"European CommunityNumber": {
+	{
+		name: "CAS",
+		sectionPath: ["Names and Identifiers", "Other Identifiers", "CAS"],
+		dataPath: ["Information", "Value", "StringWithMarkup", "String"],
+	},
+	{
+		name: "RelatedCAS",
+		sectionPath: ["Names and Identifiers", "Other Identifiers", "Related CAS"],
+		dataPath: ["Information", "Value", "StringWithMarkup", "String"],
+	},
+	{
+		name: "EuropeanCommunityNumber",
 		sectionPath: ["Names and Identifiers", "Other Identifiers", "European Community (EC) Number"],
+		dataPath: ["Information", "Value", "StringWithMarkup", "String"],
 	},
-	ICSCNumber: { sectionPath: ["Names and Identifiers", "Other Identifiers", "ICSC Number"] },
-	RTECSNumber: { sectionPath: ["Names and Identifiers", "Other Identifiers", "RTECS Number"] },
-	UNNumber: { sectionPath: ["Names and Identifiers", "Other Identifiers", "UN Number"] },
-	UNII: { sectionPath: ["Names and Identifiers", "Other Identifiers", "UNII"] },
-	FEMANumber: { sectionPath: ["Names and Identifiers", "Other Identifiers", "FEMA Number"] },
-	DSSToxSubstanceID: { sectionPath: ["Names and Identifiers", "Other Identifiers", "DSSTox Substance ID"] },
-	Wikipedia: { sectionPath: ["Names and Identifiers", "Other Identifiers", "Wikipedia"] },
-	NCIThesaurusCode: { sectionPath: ["Names and Identifiers", "Other Identifiers", "NCI Thesaurus Code"] },
+	{
+		name: "ICSCNumber",
+		sectionPath: ["Names and Identifiers", "Other Identifiers", "ICSC Number"],
+		dataPath: ["Information", "Value", "StringWithMarkup", "String"],
+	},
+	{
+		name: "RTECSNumber",
+		sectionPath: ["Names and Identifiers", "Other Identifiers", "RTECS Number"],
+		dataPath: ["Information", "Value", "StringWithMarkup", "String"],
+	},
+	{
+		name: "UNNumber",
+		sectionPath: ["Names and Identifiers", "Other Identifiers", "UN Number"],
+		dataPath: ["Information", "Value", "StringWithMarkup", "String"],
+	},
+	{
+		name: "UNII",
+		sectionPath: ["Names and Identifiers", "Other Identifiers", "UNII"],
+		dataPath: ["Information", "Value", "StringWithMarkup", "String"],
+	},
+	{
+		name: "FEMANumber",
+		sectionPath: ["Names and Identifiers", "Other Identifiers", "FEMA Number"],
+		dataPath: ["Information", "Value", "StringWithMarkup", "String"],
+	},
+	{
+		name: "DSSToxSubstanceID",
+		sectionPath: ["Names and Identifiers", "Other Identifiers", "DSSTox Substance ID"],
+		dataPath: ["Information", "Value", "StringWithMarkup", "String"],
+	},
+	{
+		name: "Wikipedia",
+		sectionPath: ["Names and Identifiers", "Other Identifiers", "Wikipedia"],
+		dataPath: ["Information", "URL"],
+	},
+	{
+		name: "NCIThesaurusCode",
+		sectionPath: ["Names and Identifiers", "Other Identifiers", "NCI Thesaurus Code"],
+		dataPath: ["Information", "Value", "StringWithMarkup", "String"],
+	},
 
-	MolecularWeight: { sectionPath: ["Chemical and Physical Properties", "Computed Properties", "Molecular Weight"] },
-	CompoundIsCanonicalized: {
+	{
+		name: "MolecularWeight",
+		sectionPath: ["Chemical and Physical Properties", "Computed Properties", "Molecular Weight"],
+		dataPath: ["Information", "Value", "StringWithMarkup", "String"],
+	},
+	{
+		name: "CompoundIsCanonicalized",
 		sectionPath: ["Chemical and Physical Properties", "Computed Properties", "Compound Is Canonicalized"],
+		dataPath: ["Information", "Value", "StringWithMarkup", "String"],
 	},
-	XLogP3: { sectionPath: ["Chemical and Physical Properties", "Computed Properties", "XLogP3"] },
-	HydrogenBondDonorCount: {
+	{
+		name: "XLogP3",
+		sectionPath: ["Chemical and Physical Properties", "Computed Properties", "XLogP3"],
+		dataPath: ["Information", "Value", "Number"],
+	},
+
+	{
+		name: "HydrogenBondDonorCount",
 		sectionPath: ["Chemical and Physical Properties", "Computed Properties", "Hydrogen Bond Donor Count"],
+		dataPath: ["Information", "Value", "Number"],
 	},
-	HydrogenBondAcceptorCount: {
+	{
+		name: "HydrogenBondAcceptorCount",
 		sectionPath: ["Chemical and Physical Properties", "Computed Properties", "Hydrogen Bond Acceptor Count"],
+		dataPath: ["Information", "Value", "Number"],
 	},
-	RotatableBondCount: {
+	{
+		name: "RotatableBondCount",
 		sectionPath: ["Chemical and Physical Properties", "Computed Properties", "Rotatable Bond Count"],
+		dataPath: ["Information", "Value", "Number"],
 	},
-	HeavyAtomCount: { sectionPath: ["Chemical and Physical Properties", "Computed Properties", "Heavy Atom Count"] },
-	FormalCharge: { sectionPath: ["Chemical and Physical Properties", "Computed Properties", "Formal Charge"] },
-	Complexity: { sectionPath: ["Chemical and Physical Properties", "Computed Properties", "Complexity"] },
+	{
+		name: "ExactMass",
+		sectionPath: ["Chemical and Physical Properties", "Computed Properties", "Exact Mass"],
+		dataPath: ["Information", "Value"],
+		resolver: (data: Value) => {
+			return {
+				String: extractFromArrayIfOneItem(resolveData(data, ["StringWithMarkup", "String"])),
+				Unit: extractFromArrayIfOneItem(resolveData(data, ["Unit"])),
+			};
+		},
+	},
+	{
+		name: "MonoisotopicMass",
+		sectionPath: ["Chemical and Physical Properties", "Computed Properties", "Monoisotopic Mass"],
+		dataPath: ["Information", "Value"],
+		resolver: (data: Value) => {
+			return {
+				String: extractFromArrayIfOneItem(resolveData(data, ["StringWithMarkup", "String"])),
+				Unit: extractFromArrayIfOneItem(resolveData(data, ["Unit"])),
+			};
+		},
+	},
+	{
+		name: "TopologicalPolarSurfaceArea",
+		sectionPath: ["Chemical and Physical Properties", "Computed Properties", "Topological Polar Surface Area"],
+		dataPath: ["Information", "Value"],
+		resolver: (data: Value) => {
+			return {
+				Number: extractFromArrayIfOneItem(resolveData(data, ["Number"])),
+				Unit: extractFromArrayIfOneItem(resolveData(data, ["Unit"])),
+			};
+		},
+	},
+	{
+		name: "HeavyAtomCount",
+		sectionPath: ["Chemical and Physical Properties", "Computed Properties", "Heavy Atom Count"],
+		dataPath: ["Information", "Value", "Number"],
+	},
+	{
+		name: "FormalCharge",
+		sectionPath: ["Chemical and Physical Properties", "Computed Properties", "Formal Charge"],
+		dataPath: ["Information", "Value", "Number"],
+	},
+	{
+		name: "Complexity",
+		sectionPath: ["Chemical and Physical Properties", "Computed Properties", "Complexity"],
+		dataPath: ["Information", "Value", "Number"],
+	},
 
-	IsotopeAtomCount: {
+	{
+		name: "IsotopeAtomCount",
 		sectionPath: ["Chemical and Physical Properties", "Computed Properties", "Isotope Atom Count"],
+		dataPath: ["Information", "Value", "Number"],
 	},
-	DefinedAtomStereocenterCount: {
+	{
+		name: "DefinedAtomStereocenterCount",
 		sectionPath: ["Chemical and Physical Properties", "Computed Properties", "Defined Atom Stereocenter Count"],
+		dataPath: ["Information", "Value", "Number"],
 	},
-	UndefinedAtomStereocenterCount: {
+	{
+		name: "UndefinedAtomStereocenterCount",
 		sectionPath: ["Chemical and Physical Properties", "Computed Properties", "Undefined Atom Stereocenter Count"],
+		dataPath: ["Information", "Value", "Number"],
 	},
-	DefinedBondStereocenterCount: {
+	{
+		name: "DefinedBondStereocenterCount",
 		sectionPath: ["Chemical and Physical Properties", "Computed Properties", "Defined Bond Stereocenter Count"],
+		dataPath: ["Information", "Value", "Number"],
 	},
-	UndefinedBondStereocenterCount: {
+	{
+		name: "UndefinedBondStereocenterCount",
 		sectionPath: ["Chemical and Physical Properties", "Computed Properties", "Undefined Bond Stereocenter Count"],
+		dataPath: ["Information", "Value", "Number"],
 	},
-	"Covalently-BondedUnitCount": {
+	{
+		name: "Covalently-BondedUnitCount",
 		sectionPath: ["Chemical and Physical Properties", "Computed Properties", "Covalently-Bonded Unit Count"],
+		dataPath: ["Information", "Value", "Number"],
 	},
 
-	PhysicalDescription: {
+	{
+		name: "PhysicalDescription",
 		sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Physical Description"],
+		dataPath: ["Information", "Value", "StringWithMarkup", "String"],
 	},
-	ColorForm: { sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Color/Form"] },
-	Odor: { sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Odor"] },
-	Taste: { sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Taste"] },
-	BoilingPoint: { sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Boiling Point"] },
-	MeltingPoint: { sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Melting Point"] },
-	FlashPoint: { sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Flash Point"] },
-	Solubility: { sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Solubility"] },
-	Density: { sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Density"] },
-	VaporDensity: { sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Vapor Density"] },
-	VaporPressure: { sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Vapor Pressure"] },
-	LogP: { sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "LogP"] },
-	HenrysLawConstant: {
+	{
+		name: "ColorForm",
+		sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Color/Form"],
+		dataPath: ["Information", "Value", "StringWithMarkup", "String"],
+	},
+	{
+		name: "Odor",
+		sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Odor"],
+		dataPath: ["Information", "Value", "StringWithMarkup", "String"],
+	},
+	{
+		name: "Taste",
+		sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Taste"],
+		dataPath: ["Information", "Value", "StringWithMarkup", "String"],
+	},
+	{
+		name: "BoilingPoint",
+		sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Boiling Point"],
+		dataPath: ["Information", "Value", "StringWithMarkup", "String"],
+	},
+	{
+		name: "MeltingPoint",
+		sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Melting Point"],
+		dataPath: ["Information", "Value", "StringWithMarkup", "String"],
+	},
+	{
+		name: "FlashPoint",
+		sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Flash Point"],
+		dataPath: ["Information", "Value", "StringWithMarkup", "String"],
+	},
+	{
+		name: "Solubility",
+		sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Solubility"],
+		dataPath: ["Information", "Value", "StringWithMarkup", "String"],
+	},
+	{
+		name: "Density",
+		sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Density"],
+		dataPath: ["Information", "Value", "StringWithMarkup", "String"],
+	},
+	{
+		name: "VaporDensity",
+		sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Vapor Density"],
+		dataPath: ["Information", "Value", "StringWithMarkup", "String"],
+	},
+	{
+		name: "VaporPressure",
+		sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Vapor Pressure"],
+		dataPath: ["Information", "Value", "StringWithMarkup", "String"],
+	},
+	{
+		name: "LogP",
+		sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "LogP"],
+		dataPath: ["Information", "Value", "StringWithMarkup", "String"],
+	},
+	{
+		name: "HenrysLawConstant",
 		sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Henrys Law Constant"],
+		dataPath: ["Information", "Value", "StringWithMarkup", "String"],
 	},
-	AtmosphericOHRateConstant: {
+	{
+		name: "AtmosphericOHRateConstant",
 		sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Atmospheric OH Rate Constant"],
+		dataPath: ["Information", "Value", "StringWithMarkup", "String"],
 	},
-	"Stability/ShelfLife": {
+	{
+		name: "Stability/ShelfLife",
 		sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Stability/Shelf Life"],
+		dataPath: ["Information", "Value", "StringWithMarkup", "String"],
 	},
-	AutoignitionTemperature: {
+	{
+		name: "AutoignitionTemperature",
 		sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Autoignition Temperature"],
+		dataPath: ["Information", "Value", "StringWithMarkup", "String"],
 	},
-	Decomposition: { sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Decomposition"] },
-	Viscosity: { sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Viscosity"] },
-	Corrosivity: { sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Corrosivity"] },
-	HeatofCombustion: {
+	{
+		name: "Decomposition",
+		sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Decomposition"],
+		dataPath: ["Information", "Value", "StringWithMarkup", "String"],
+	},
+	{
+		name: "Viscosity",
+		sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Viscosity"],
+		dataPath: ["Information", "Value", "StringWithMarkup", "String"],
+	},
+	{
+		name: "Corrosivity",
+		sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Corrosivity"],
+		dataPath: ["Information", "Value", "StringWithMarkup", "String"],
+	},
+	{
+		name: "HeatofCombustion",
 		sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Heat of Combustion"],
+		dataPath: ["Information", "Value", "StringWithMarkup", "String"],
 	},
-	HeatofVaporization: {
+	{
+		name: "HeatofVaporization",
 		sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Heat of Vaporization"],
+		dataPath: ["Information", "Value", "StringWithMarkup", "String"],
 	},
-	pH: { sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "pH"] },
-	SurfaceTension: {
+	{
+		name: "pH",
+		sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "pH"],
+		dataPath: ["Information", "Value", "StringWithMarkup", "String"],
+	},
+	{
+		name: "SurfaceTension",
 		sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Surface Tension"],
+		dataPath: ["Information", "Value", "StringWithMarkup", "String"],
 	},
-	IonizationPotential: {
+	{
+		name: "IonizationPotential",
 		sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Ionization Potential"],
+		dataPath: ["Information", "Value", "StringWithMarkup", "String"],
 	},
-	Polymerization: { sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Polymerization"] },
-	OdorThreshold: { sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Odor Threshold"] },
-	RefractiveIndex: {
+	{
+		name: "Polymerization",
+		sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Polymerization"],
+		dataPath: ["Information", "Value", "StringWithMarkup", "String"],
+	},
+	{
+		name: "OdorThreshold",
+		sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Odor Threshold"],
+		dataPath: ["Information", "Value", "StringWithMarkup", "String"],
+	},
+	{
+		name: "RefractiveIndex",
 		sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Refractive Index"],
+		dataPath: ["Information", "Value", "StringWithMarkup", "String"],
 	},
-	DissociationConstants: {
+	{
+		name: "DissociationConstants",
 		sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Dissociation Constants"],
+		dataPath: ["Information", "Value", "StringWithMarkup", "String"],
 	},
-	KovatsRetentionIndex: {
+	{
+		name: "KovatsRetentionIndex",
 		sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Kovats Retention Index"],
+		dataPath: ["Information", "Value", "Number"],
 	},
-	OtherExperimentalProperties: {
+	{
+		name: "OtherExperimentalProperties",
 		sectionPath: ["Chemical and Physical Properties", "Experimental Properties", "Other Experimental Properties"],
+		dataPath: ["Information", "Value", "StringWithMarkup", "String"],
 	},
-
-	FoodAdditiveClasses: {
-		sectionPath: ["Food Additive and Ingredients", "Food Additive Classes"],
+	{
+		name: "FoodAdditiveClasses",
+		sectionPath: ["Food Additives and Ingredients", "Food Additive Classes"],
+		dataPath: ["Information", "Value", "StringWithMarkup", "String"],
 	},
-	AgrochemicalCategory: {
+	{
+		name: "AgrochemicalCategory",
 		sectionPath: ["Agrochemical Information", "Agrochemical Category"],
+		dataPath: ["Information", "Value", "StringWithMarkup", "String"],
 	},
+];
+
+const findSection = (parentSection: BaseSection<string> | PubChemCompound) => (targetSectionHeading: string) =>
+	parentSection.Section?.find((x) => x.TOCHeading === targetSectionHeading);
+
+const getFromObject = (obj: ObjectOfAny | ObjectOfAny[], path: string): {} => {
+	if (Array.isArray(obj)) {
+		return [...new Set(obj.map((x) => getFromObject(x, path)).flat())];
+	}
+	return obj[path];
+};
+
+const resolveData = (parent: ObjectOfAny, dataPath: string[]): ObjectOfAny | ObjectOfAny[] | undefined => {
+	if (dataPath.length === 0) {
+		return parent;
+	}
+	const [head, ...tail] = dataPath;
+	const next = getFromObject(parent, head);
+	if (next) {
+		return resolveData(next, tail);
+	} else {
+		return undefined;
+	}
+};
+
+const extractFromArrayIfOneItem = (val: any) => {
+	if (val && val.length === 1) {
+		return val[0];
+	}
+	return val;
 };
 
 export default function getNecessaryData(raw: PubChemCompound) {
 	let res = {};
+	dataPaths.forEach(({ name, sectionPath, dataPath, resolver }) => {
+		const section = [...sectionPath].reduce((acc, cur, i, arr) => {
+			if (Object.keys(acc).length === 0) {
+				const foundSection = findSection(raw)(cur);
+				if (!foundSection) {
+					arr.splice(i, 1);
+					return acc;
+				}
+				return foundSection;
+			}
+			return findSection(acc)(cur) || acc;
+		}, {} as BaseSection<string>);
+		let data = extractFromArrayIfOneItem(resolveData(section, dataPath));
 
-	res = setToResult(res)({ RecordNumber: raw.RecordNumber });
-	res = setToResult(res)({ RecordTitle: raw.RecordTitle });
-
-	const ChemicalSafety = getChemicalSafety(raw);
-
-	res = setToResult(res)({ ChemicalSafety });
-
-	const NamesAndIdentifiers = getH3(raw)("Names and Identifiers") as BaseSection<"Names and Identifiers">;
-	if (NamesAndIdentifiers) {
-		res = setToResult(res)({
-			RecordDescription: getStringWithMarkupString(
-				getSubsection(NamesAndIdentifiers)("Record Description") as BaseSection<"Record Description">
-			),
-		});
-
-		const ComputedDescriptors = getSubsection(NamesAndIdentifiers)(
-			"Computed Descriptors"
-		) as BaseSection<"Computed Descriptors">;
-		if (ComputedDescriptors) {
-			["IUPAC Name", "InChI", "InChI Key", "Canonical SMILES"].forEach((x) => {
-				let key = x.replace(/ /g, "");
-				res = setToResult(res)({
-					[key]: getStringWithMarkupString(getSubsection(ComputedDescriptors)(x)),
-				});
-			});
+		if (resolver) {
+			data = resolver(data);
 		}
-
-		const MolecularFormula = getStringWithMarkupString(
-			getSubsection(NamesAndIdentifiers)("Molecular Formula") as BaseSection<"Molecular Formula">
-		);
-		res = setToResult(res)({ MolecularFormula });
-
-		const OtherIdentifiers = getSubsection(NamesAndIdentifiers)(
-			"Other Identifiers"
-		) as BaseSection<"Other Identifiers">;
-		if (OtherIdentifiers) {
-			[
-				"CAS",
-				"Related CAS",
-				"European Community (EC) Number",
-				"ICSC Number",
-				"RTECS Number",
-				"UN Number",
-				"UNII",
-				"FEMA Number",
-				"DSSTox Substance ID",
-				"NCI Thesaurus Code",
-			].forEach((x) => {
-				let key = x.replace(/ /g, "");
-				res = setToResult(res)({
-					[key]: getStringWithMarkupString(getSubsection(OtherIdentifiers)(x)),
-				});
-			});
-
-			res = setToResult(res)({ Wikipedia: getSubsection(OtherIdentifiers)("Wikipedia")?.Information[0].URL });
-		}
-	}
-
-	const ChemicalAndPhysicalProperties = getH3(raw)(
-		"Chemical and Physical Properties"
-	) as BaseSection<"Chemical and Physical Properties">;
-
-	if (ChemicalAndPhysicalProperties) {
-		const ComputedProperties = getSubsection(ChemicalAndPhysicalProperties)(
-			"Computed Properties"
-		) as BaseSection<"Computed Properties">;
-
-		if (ComputedProperties) {
-			//Information > Value > StringWithMarkup > String
-			["Molecular Weight", "Compound Is Canonicalized"].forEach((x) => {
-				let key = x.replace(/ /g, "");
-				res = setToResult(res)({
-					[key]: getStringWithMarkupString(getSubsection(ComputedProperties)(x)),
-				});
-			});
-
-			["Exact Mass", "Monoisotopic Mass"].forEach((x) => {
-				let key = x.replace(/ /g, "");
-				const section = getSubsection(ComputedProperties)(x);
-				res = setToResult(res)({
-					[key]: { String: getStringWithMarkupString(section), Unit: getUnit(section) },
-				});
-			});
-
-			//This needs both number and unit
-			const topological = getSubsection(ComputedProperties)("Topological Polar Surface Area");
-			res = setToResult(res)({
-				"Topological Polar Surface Area": { Number: getNumber(topological), Unit: getUnit(topological) },
-			});
-
-			//Information > Value > Number
-			[
-				"XLogP3",
-				"Hydrogen Bond Donor Count",
-				"Hydrogen Bond Acceptor Count",
-				"Rotatable Bond Count",
-				"Heavy Atom Count",
-				"Formal Charge",
-				"Complexity",
-				"Isotope Atom Count",
-				"Defined Atom Stereocenter Count",
-				"Undefined Atom Stereocenter Count",
-				"Defined Bond Stereocenter Count",
-				"Undefined Bond Stereocenter Count",
-				"Covalently-Bonded Unit Count",
-			].forEach((x) => {
-				let key = x.replace(/ /g, "");
-				res = setToResult(res)({
-					[key]: getNumber(getSubsection(ComputedProperties)(x)),
-				});
-			});
-		}
-
-		const ExperimentalProperties = getSubsection(ChemicalAndPhysicalProperties)(
-			"Experimental Properties"
-		) as BaseSection<"Experimental Properties">;
-
-		if (ExperimentalProperties) {
-			[
-				"Physical Description",
-				"Color/Form",
-				"Odor",
-				"Taste",
-				"Boiling Point",
-				"Melting Point",
-				"Flash Point",
-				"Solubility",
-				"Density",
-				"Vapor Density",
-				"Vapor Pressure",
-				"LogP",
-				"Henrys Law Constant",
-				"Atmospheric OH Rate Constant",
-				"Stability/Shelf Life",
-				"Autoignition Temperature",
-				"Decomposition",
-				"Viscosity",
-				"Corrosivity",
-				"Heat of Combustion",
-				"Heat of Vaporization",
-				"pH",
-				"Surface Tension",
-				"Ionization Potential",
-				"Polymerization",
-				"Odor Threshold",
-				"Refractive Index",
-				"Dissociation Constants",
-				"Other Experimental Properties",
-			].forEach((x) => {
-				let key = x.replace(/ /g, "");
-				res = setToResult(res)({
-					[key]: getStringWithMarkupString(getSubsection(ExperimentalProperties)(x)),
-				});
-			});
-
-			res = setToResult(res)({
-				"Kovats Retention Index": getNumber(getSubsection(ExperimentalProperties)("Kovats Retention Index")),
-			});
-		}
-	}
-
-	const FoodAdditivesAndIngredients = getH3(raw)(
-		"Food Additives and Ingredients"
-	) as BaseSection<"Food Additives and Ingredients">;
-	if (FoodAdditivesAndIngredients) {
-		const FoodAdditiveClasses = getSubsection(FoodAdditivesAndIngredients)(
-			"Food Additive Classes"
-		) as BaseSection<"Food Additive Classes">;
-
-		res = setToResult(res)({
-			FoodAdditiveClasses: getStringWithMarkupString(FoodAdditiveClasses),
-		});
-	}
-
-	const AgrochemicalInformation = getH3(raw)("Agrochemical Information") as BaseSection<"Agrochemical Information">;
-	if (AgrochemicalInformation) {
-		res = setToResult(res)({
-			AgrochemicalCategory: getStringWithMarkupString(
-				getSubsection(AgrochemicalInformation)("Agrochemical Category") as BaseSection<"Agrochemical Category">
-			),
-		});
-	}
-
+		res = { ...res, [name]: data };
+	});
 	return res;
 }

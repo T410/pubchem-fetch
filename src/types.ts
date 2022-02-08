@@ -1,4 +1,27 @@
 export type PubChemCompound = Record;
+export type DataKeys =
+	| keyof BaseSection<string>
+	| keyof Information
+	| keyof Value
+	| keyof StringWithMarkup
+	| keyof Markup;
+
+export interface Markup {
+	URL?: string;
+	Type?: string;
+	Extra?: string;
+}
+
+export interface StringWithMarkup {
+	String: string;
+	Markup: Markup;
+}
+
+export interface Value {
+	Number?: number[];
+	Unit?: string;
+	StringWithMarkup?: StringWithMarkup[];
+}
 
 export interface Information {
 	URL?: string;

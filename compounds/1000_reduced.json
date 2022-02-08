@@ -1,0 +1,223 @@
+{
+    "RecordNumber": 1000,
+    "RecordTitle": "2-Amino-1-phenylethanol",
+    "ChemicalSafety": [
+        [
+            {
+                "Type": "Icon",
+                "URL": "https://pubchem.ncbi.nlm.nih.gov/images/ghs/GHS07.svg",
+                "Extra": "Irritant"
+            }
+        ]
+    ],
+    "RecordDescription": [
+        "Phenylethanolamine is the simplest member of the class of phenylethanolamines that is 2-aminoethanol bearing a phenyl substituent at the 1-position. The parent of the phenylethanolamine class. It has a role as a human metabolite. It is a conjugate base of a phenylethanolaminium.",
+        "Simple amine found in the brain. It may be modulator of sympathetic functions. Its derivatives are adrenergic agonists and antagonists. It is also used in chemical industry."
+    ],
+    "IUPACName": [
+        "2-amino-1-phenylethanol"
+    ],
+    "InChI": [
+        "InChI=1S/C8H11NO/c9-6-8(10)7-4-2-1-3-5-7/h1-5,8,10H,6,9H2"
+    ],
+    "InChIKey": [
+        "ULSIYEODSMZIPX-UHFFFAOYSA-N"
+    ],
+    "CanonicalSMILES": [
+        "C1=CC=C(C=C1)C(CN)O"
+    ],
+    "MolecularFormula": [
+        "C8H11NO"
+    ],
+    "CAS": [
+        "7568-93-6"
+    ],
+    "RelatedCAS": [
+        ""
+    ],
+    "EuropeanCommunity(EC)Number": [
+        "231-469-1"
+    ],
+    "ICSCNumber": [
+        ""
+    ],
+    "RTECSNumber": [
+        ""
+    ],
+    "UNNumber": [
+        ""
+    ],
+    "UNII": [
+        ""
+    ],
+    "FEMANumber": [
+        ""
+    ],
+    "DSSToxSubstanceID": [
+        ""
+    ],
+    "NCIThesaurusCode": [
+        ""
+    ],
+    "Wikipedia": "https://en.wikipedia.org/wiki/Phenylethanolamine",
+    "MolecularWeight": [
+        "137.18"
+    ],
+    "CompoundIsCanonicalized": [
+        "Yes"
+    ],
+    "ExactMass": {
+        "String": [
+            "137.084063974"
+        ],
+        "Unit": [
+            "g/mol"
+        ]
+    },
+    "MonoisotopicMass": {
+        "String": [
+            "137.084063974"
+        ],
+        "Unit": [
+            "g/mol"
+        ]
+    },
+    "Topological Polar Surface Area": {
+        "Number": [
+            46.2
+        ],
+        "Unit": [
+            "Å²"
+        ]
+    },
+    "XLogP3": [
+        0.1
+    ],
+    "HydrogenBondDonorCount": [
+        2
+    ],
+    "HydrogenBondAcceptorCount": [
+        2
+    ],
+    "RotatableBondCount": [
+        2
+    ],
+    "HeavyAtomCount": [
+        10
+    ],
+    "FormalCharge": [
+        0
+    ],
+    "Complexity": [
+        89.3
+    ],
+    "IsotopeAtomCount": [
+        0
+    ],
+    "DefinedAtomStereocenterCount": [
+        0
+    ],
+    "UndefinedAtomStereocenterCount": [
+        1
+    ],
+    "DefinedBondStereocenterCount": [
+        0
+    ],
+    "UndefinedBondStereocenterCount": [
+        0
+    ],
+    "Covalently-BondedUnitCount": [
+        1
+    ],
+    "PhysicalDescription": [
+        "Solid"
+    ],
+    "Color/Form": [
+        ""
+    ],
+    "Odor": [
+        ""
+    ],
+    "Taste": [
+        ""
+    ],
+    "BoilingPoint": [
+        ""
+    ],
+    "MeltingPoint": [
+        "56.5°C"
+    ],
+    "FlashPoint": [
+        ""
+    ],
+    "Solubility": [
+        "45.8 mg/mL"
+    ],
+    "Density": [
+        ""
+    ],
+    "VaporDensity": [
+        ""
+    ],
+    "VaporPressure": [
+        ""
+    ],
+    "LogP": [
+        ""
+    ],
+    "HenrysLawConstant": [
+        ""
+    ],
+    "AtmosphericOHRateConstant": [
+        ""
+    ],
+    "Stability/ShelfLife": [
+        ""
+    ],
+    "AutoignitionTemperature": [
+        ""
+    ],
+    "Decomposition": [
+        ""
+    ],
+    "Viscosity": [
+        ""
+    ],
+    "Corrosivity": [
+        ""
+    ],
+    "HeatofCombustion": [
+        ""
+    ],
+    "HeatofVaporization": [
+        ""
+    ],
+    "pH": [
+        ""
+    ],
+    "SurfaceTension": [
+        ""
+    ],
+    "IonizationPotential": [
+        ""
+    ],
+    "Polymerization": [
+        ""
+    ],
+    "OdorThreshold": [
+        ""
+    ],
+    "RefractiveIndex": [
+        ""
+    ],
+    "DissociationConstants": [
+        ""
+    ],
+    "OtherExperimentalProperties": [
+        ""
+    ],
+    "Kovats Retention Index": [
+        ""
+    ],
+    "id": 0
+}
