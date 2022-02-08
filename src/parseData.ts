@@ -1,8 +1,8 @@
 import { PubChemCompound } from "./types";
-import type { BaseSection, DataKeys, Information, Markup, Value, StringWithMarkup } from "./types";
-
+import type { BaseSection, DataKeys, Markup, Value } from "./types";
 type ObjectOfAny = { [key: string]: any };
 
+const NoData = "N/A";
 const dataPaths: {
 	name: string;
 	sectionPath: string[];
@@ -13,10 +13,8 @@ const dataPaths: {
 		name: "ChemicalSafety",
 		sectionPath: ["Chemical Safety"],
 		dataPath: ["Information", "Value", "StringWithMarkup", "Markup"],
-		resolver: (data: Markup[]) => {
-			return data.map((x): Markup => {
-				return { Extra: x.Extra, Type: x.Type, URL: x.URL };
-			});
+		resolver: (data: Markup) => {
+			return { Extra: data.Extra, Type: data.Type, URL: data.URL };
 		},
 	},
 	{
@@ -384,7 +382,7 @@ const getFromObject = (obj: ObjectOfAny | ObjectOfAny[], path: string): {} => {
 	return obj[path];
 };
 
-const resolveData = (parent: ObjectOfAny, dataPath: string[]): ObjectOfAny | ObjectOfAny[] | undefined => {
+const resolveData = (parent: ObjectOfAny, dataPath: string[]): ObjectOfAny | ObjectOfAny[] | typeof NoData => {
 	if (dataPath.length === 0) {
 		return parent;
 	}
@@ -393,7 +391,7 @@ const resolveData = (parent: ObjectOfAny, dataPath: string[]): ObjectOfAny | Obj
 	if (next) {
 		return resolveData(next, tail);
 	} else {
-		return undefined;
+		return NoData;
 	}
 };
 
@@ -420,8 +418,12 @@ export default function getNecessaryData(raw: PubChemCompound) {
 		}, {} as BaseSection<string>);
 		let data = extractFromArrayIfOneItem(resolveData(section, dataPath));
 
-		if (resolver) {
-			data = resolver(data);
+		if (resolver && data && data !== NoData) {
+			if (Array.isArray(data)) {
+				data = data.map(resolver);
+			} else {
+				data = resolver(data);
+			}
 		}
 		res = { ...res, [name]: data };
 	});

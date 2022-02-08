@@ -42,6 +42,11 @@ function init() {
         let i = 0;
         Promise.all(promises).then((res) => {
             res.forEach(({ compound, compoundId, id }) => {
+                fs.writeFile("./compounds/" + compoundId + ".json", JSON.stringify(compound), (err) => {
+                    if (err) {
+                        console.log(err);
+                    }
+                });
                 const reducedCompound = getNecessaryData(compound);
                 writeToFile(reducedCompound, compoundId, id);
             });

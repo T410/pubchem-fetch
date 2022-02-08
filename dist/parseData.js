@@ -1,12 +1,11 @@
+const NoData = "N/A";
 const dataPaths = [
     {
         name: "ChemicalSafety",
         sectionPath: ["Chemical Safety"],
         dataPath: ["Information", "Value", "StringWithMarkup", "Markup"],
         resolver: (data) => {
-            return data.map((x) => {
-                return { Extra: x.Extra, Type: x.Type, URL: x.URL };
-            });
+            return { Extra: data.Extra, Type: data.Type, URL: data.URL };
         },
     },
     {
@@ -375,7 +374,7 @@ const resolveData = (parent, dataPath) => {
         return resolveData(next, tail);
     }
     else {
-        return undefined;
+        return NoData;
     }
 };
 const extractFromArrayIfOneItem = (val) => {
@@ -399,8 +398,13 @@ export default function getNecessaryData(raw) {
             return findSection(acc)(cur) || acc;
         }, {});
         let data = extractFromArrayIfOneItem(resolveData(section, dataPath));
-        if (resolver) {
-            data = resolver(data);
+        if (resolver && data && data !== NoData) {
+            if (Array.isArray(data)) {
+                data = data.map(resolver);
+            }
+            else {
+                data = resolver(data);
+            }
         }
         res = Object.assign(Object.assign({}, res), { [name]: data });
     });
