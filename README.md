@@ -8,6 +8,8 @@ This repo was developed for this issue
 
 https://github.com/evrimagaci/periodum-api/issues/2
 
+The projects saves the "reduced" datas to `compounds` folder with respect to their `compoundId`s.
+
 # Usage
 
 Build it
@@ -22,5 +24,5 @@ Run it
 `npm start -- startId endId compoundId`
 
 ```
-npm start -- 0 5 222
+npm start -- 0 100 222
 ```
