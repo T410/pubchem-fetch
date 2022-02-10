@@ -78,7 +78,7 @@ function init() {
             ids.push(i);
         }
         throttledPromises(fetchJson, ids, 5, 1000).then((data) => {
-            console.log("yay");
+            console.log("Done");
         });
     });
 }
