@@ -365,7 +365,7 @@ const dataPaths = [
 const findSection = (parentSection) => (targetSectionHeading) => { var _a; return (_a = parentSection.Section) === null || _a === void 0 ? void 0 : _a.find((x) => x.TOCHeading === targetSectionHeading); };
 const getFromObject = (obj, path) => {
     if (Array.isArray(obj)) {
-        return [...new Set(obj.map((x) => getFromObject(x, path)).flat())];
+        return [...new Set(obj.map((x) => getFromObject(x, path)).flat())].filter((x) => x !== undefined);
     }
     return obj[path];
 };
@@ -375,11 +375,11 @@ const resolveData = (parent, dataPath) => {
     }
     const [head, ...tail] = dataPath;
     const next = getFromObject(parent, head);
-    if (next) {
-        return resolveData(next, tail);
+    if (!next || (Array.isArray(next) && extractFromArrayIfOneItem(next) === undefined)) {
+        return NoData;
     }
     else {
-        return NoData;
+        return resolveData(next, tail);
     }
 };
 const extractFromArrayIfOneItem = (val) => {
@@ -391,7 +391,9 @@ const extractFromArrayIfOneItem = (val) => {
 export default function getNecessaryData(raw) {
     let res = {};
     res = Object.assign(Object.assign({}, res), { RecordTitle: raw.RecordTitle });
+    res = Object.assign(Object.assign({}, res), { RecordNumber: raw.RecordNumber });
     dataPaths.forEach(({ name, sectionPath, dataPath, resolver }) => {
+        // if (name === "MeltingPoint") {
         const section = [...sectionPath].reduce((acc, cur, i, arr) => {
             if (Object.keys(acc).length === 0) {
                 const foundSection = findSection(raw)(cur);
@@ -413,6 +415,8 @@ export default function getNecessaryData(raw) {
             }
         }
         res = Object.assign(Object.assign({}, res), { [name]: data });
+        // console.log(data, name);
+        // }
     });
     return res;
 }

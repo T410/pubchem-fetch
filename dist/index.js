@@ -13,16 +13,56 @@ import getNecessaryData from "./parseData.js";
 const _parseInt = (x) => parseInt(x);
 const [startId, endId, compoundId] = process.argv.slice(2).map(_parseInt);
 const API_URL = "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/";
-function fetchJson(compoundId, id) {
-    return new Promise((resolve, reject) => {
-        fetch(API_URL + compoundId + "/JSON")
-            .then((res) => res.json())
-            .then((res) => {
-            const { Record } = res;
-            resolve({ compound: Record, compoundId, id });
-        });
+function fetchJson(compoundId) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield fetch(API_URL + compoundId + "/JSON");
     });
 }
+const asyncForEach = (array, callback) => __awaiter(void 0, void 0, void 0, function* () {
+    for (let index = 0; index < array.length; index++) {
+        yield callback(array[index], index, array);
+    }
+});
+const delay = (t) => {
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            resolve(t);
+        }, t);
+    });
+};
+function split(arr, n) {
+    var res = [];
+    while (arr.length) {
+        res.push(arr.splice(0, n));
+    }
+    return res;
+}
+export const throttledPromises = (asyncFunction, items, batchSize = 1, delayAmount) => {
+    return new Promise((resolve, reject) => __awaiter(void 0, void 0, void 0, function* () {
+        const output = [];
+        const batches = split(items, batchSize);
+        yield asyncForEach(batches, (batch) => __awaiter(void 0, void 0, void 0, function* () {
+            const promises = batch.map(asyncFunction).map((p) => p.catch(reject));
+            const results = yield Promise.all(promises);
+            results.forEach((response) => __awaiter(void 0, void 0, void 0, function* () {
+                const { Record } = (yield response.json());
+                const { RecordNumber } = Record;
+                const id = RecordNumber - compoundId + startId;
+                try {
+                    console.log(`Success ${RecordNumber}/${id}`);
+                    const reducedCompound = getNecessaryData(Record);
+                    writeToFile(reducedCompound, RecordNumber, id);
+                }
+                catch (e) {
+                    console.log(RecordNumber, e);
+                }
+            }));
+            output.push(...results);
+            yield delay(delayAmount);
+        }));
+        resolve(output);
+    }));
+};
 function writeToFile(data, compoundId, id) {
     data.id = id;
     fs.writeFile("./compounds/" + compoundId + "_reduced.json", JSON.stringify(data), (err) => {
@@ -33,23 +73,12 @@ function writeToFile(data, compoundId, id) {
 }
 function init() {
     return __awaiter(this, void 0, void 0, function* () {
-        let promises = [];
-        let count = 0;
-        for (let i = startId; i <= endId; i++) {
-            promises.push(fetchJson(compoundId + count, startId + count));
-            count++;
+        let ids = [];
+        for (let i = compoundId; i < compoundId + (endId - startId + 1); i++) {
+            ids.push(i);
         }
-        let i = 0;
-        Promise.all(promises).then((res) => {
-            res.forEach(({ compound, compoundId, id }) => {
-                fs.writeFile("./compounds/" + compoundId + ".json", JSON.stringify(compound), (err) => {
-                    if (err) {
-                        console.log(err);
-                    }
-                });
-                const reducedCompound = getNecessaryData(compound);
-                writeToFile(reducedCompound, compoundId, id);
-            });
+        throttledPromises(fetchJson, ids, 5, 1000).then((data) => {
+            console.log("yay");
         });
     });
 }

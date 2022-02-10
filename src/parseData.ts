@@ -380,9 +380,9 @@ const dataPaths: {
 const findSection = (parentSection: BaseSection<string> | PubChemCompound) => (targetSectionHeading: string) =>
 	parentSection.Section?.find((x) => x.TOCHeading === targetSectionHeading);
 
-const getFromObject = (obj: ObjectOfAny | ObjectOfAny[], path: string): {} => {
+const getFromObject = (obj: ObjectOfAny | ObjectOfAny[], path: string): {} | [] => {
 	if (Array.isArray(obj)) {
-		return [...new Set(obj.map((x) => getFromObject(x, path)).flat())];
+		return [...new Set(obj.map((x) => getFromObject(x, path)).flat())].filter((x) => x !== undefined);
 	}
 	return obj[path];
 };
@@ -393,10 +393,10 @@ const resolveData = (parent: ObjectOfAny, dataPath: string[]): ObjectOfAny | Obj
 	}
 	const [head, ...tail] = dataPath;
 	const next = getFromObject(parent, head);
-	if (next) {
-		return resolveData(next, tail);
-	} else {
+	if (!next || (Array.isArray(next) && extractFromArrayIfOneItem(next) === undefined)) {
 		return NoData;
+	} else {
+		return resolveData(next, tail);
 	}
 };
 
@@ -410,7 +410,9 @@ const extractFromArrayIfOneItem = (val: any) => {
 export default function getNecessaryData(raw: PubChemCompound) {
 	let res = {};
 	res = { ...res, RecordTitle: raw.RecordTitle };
+	res = { ...res, RecordNumber: raw.RecordNumber };
 	dataPaths.forEach(({ name, sectionPath, dataPath, resolver }) => {
+		// if (name === "MeltingPoint") {
 		const section = [...sectionPath].reduce((acc, cur, i, arr) => {
 			if (Object.keys(acc).length === 0) {
 				const foundSection = findSection(raw)(cur);
@@ -423,7 +425,6 @@ export default function getNecessaryData(raw: PubChemCompound) {
 			return findSection(acc)(cur) || acc;
 		}, {} as BaseSection<string>);
 		let data = extractFromArrayIfOneItem(resolveData(section, dataPath));
-
 		if (resolver && data && data !== NoData) {
 			if (Array.isArray(data)) {
 				data = data.map(resolver);
@@ -432,6 +433,8 @@ export default function getNecessaryData(raw: PubChemCompound) {
 			}
 		}
 		res = { ...res, [name]: data };
+		// console.log(data, name);
+		// }
 	});
 	return res;
 }
